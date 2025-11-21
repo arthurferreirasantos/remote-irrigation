@@ -50,3 +50,10 @@ BLYNK_WRITE(V1) {
 void loop() {
   Blynk.run();
 }
+
+---
+
+## 📊 Fluxograma
+O sistema funciona de forma simples: cada vez que o botão é pressionado, o estado da bomba alterna entre ligado e desligado.
+
+![Fluxograma](docs/fluxograma.png)
