@@ -1,59 +1,73 @@
-# 🌱 Sistema de Irrigação Remota via Smartphone
+# 🌱 Sistema de Irrigação Remota (Simulação com Botão Toggle)
 
-Este projeto apresenta um sistema **teórico** de irrigação remota controlado por smartphone,
-utilizando ESP32, relé e bomba de água. O objetivo é demonstrar como a **IoT** pode ser aplicada
-na agricultura para otimizar o uso da água e facilitar o controle à distância.
-
----
-
-## 🚀 Funcionalidades
-- Controle remoto da bomba de água via aplicativo (Blynk ou interface web).
-- Monitoramento opcional da umidade do solo.
-- Possibilidade de automação da rega conforme necessidade.
+Este projeto demonstra um sistema de irrigação remota utilizando **ESP32** e simulação no **Wokwi**.  
+O LED representa o relé/bomba e o botão físico simula o comando remoto.  
+Cada clique no botão alterna o estado da bomba entre **ligado** e **desligado**.
 
 ---
 
-## 🔧 Componentes utilizados
-- ESP32 (Wi-Fi integrado)
-- Módulo de relé
-- Bomba de água / válvula solenoide
-- Sensor de umidade do solo (opcional)
-- Fonte de energia (tomada ou painel solar)
+## 📂 Estrutura do Repositório
+remote-irrigation/ 
+├── src/ 
+│ └── irrigation.ino # Código principal (versão toggle com botão) 
+├── docs/ 
+│ ├── esquema.png # Esquema elétrico do circuito 
+│ └── fluxograma.png # Fluxograma do funcionamento 
+└── README.md # Documentação principal
 
 ---
 
-## 📲 Código de exemplo
+## 🖥️ Simulação
+Este projeto foi desenvolvido de forma teórica e testado em simuladores online.
+
+- [Simulação no Wokwi](https://wokwi.com/projects/448263757206533121)
+
+---
+
+## 🔧 Circuito
+- **LED (simula bomba/relé):**
+  - Anodo (+) → GPIO 5 do ESP32  
+  - Catodo (–) → GND, com resistor de 220Ω em série  
+
+- **Botão:**
+  - Um terminal → GPIO 4 do ESP32  
+  - Outro terminal → GND do ESP32  
+
+---
+
+## 💻 Código (irrigation.ino)
 
 ```cpp
-#include <WiFi.h>
-#include <BlynkSimpleEsp32.h>
+// Sistema de Irrigação Remota - Versão Toggle com Botão
+// LED representa o relé/bomba
+// Cada clique no botão alterna o estado da bomba
 
-#define BLYNK_TEMPLATE_ID "TMPLxxxx"
-#define BLYNK_AUTH_TOKEN "SEU_TOKEN"
+int relePin  = 5;   // GPIO 5 -> LED (representa bomba/relé)
+int botaoPin = 4;   // GPIO 4 -> Pushbutton
 
-char ssid[] = "SUA_REDE_WIFI";
-char pass[] = "SENHA_WIFI";
-
-int relePin = 5;
+bool estadoBomba = false;   // Estado inicial: desligada
+bool ultimoEstadoBotao = HIGH; // Botão não pressionado
 
 void setup() {
   pinMode(relePin, OUTPUT);
-  digitalWrite(relePin, LOW);
-  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
-}
-
-BLYNK_WRITE(V1) {
-  int estado = param.asInt();
-  digitalWrite(relePin, estado);
+  pinMode(botaoPin, INPUT_PULLUP);  // Usa resistor interno
+  digitalWrite(relePin, LOW);       // Bomba desligada inicialmente
 }
 
 void loop() {
-  Blynk.run();
+  int leituraBotao = digitalRead(botaoPin);
+
+  // Detecta transição: botão foi pressionado (de HIGH para LOW)
+  if (leituraBotao == LOW && ultimoEstadoBotao == HIGH) {
+    estadoBomba = !estadoBomba; // Alterna estado
+    digitalWrite(relePin, estadoBomba ? HIGH : LOW);
+    delay(200); // Pequeno atraso para evitar múltiplos cliques (debounce)
+  }
+
+  ultimoEstadoBotao = leituraBotao;
 }
 
 ---
 
 ## 📊 Fluxograma
 O sistema funciona de forma simples: cada vez que o botão é pressionado, o estado da bomba alterna entre ligado e desligado.
-
-![Fluxograma](docs/fluxograma.png)
